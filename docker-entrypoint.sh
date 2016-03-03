@@ -51,11 +51,20 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
                         chown www-data:www-data .htaccess
                 fi
 
+		SECRET=`makepasswd`
+		mv /configuration.php /var/www/html/
+		sed -i 's/DBHOST/$(JOOMLA_DB_HOST)/g' /configuration.php
+                sed -i 's/DBUSER/$(JOOMLA_DB_HOST)/g' /configuration.php
+                sed -i 's/DBPASS/$(JOOMLA_DB_HOST)/g' /configuration.php
+                sed -i 's/DBDC/$(JOOMLA_DB_HOST)/g' /configuration.php
+                sed -i 's/SECRETSECRETSECRET/$(SECRET)/g' /configuration.php
                 echo >&2 "Complete! Joomla has been successfully copied to $(pwd)"
         fi
 
         # Ensure the MySQL Database is created
         php /makedb.php "$JOOMLA_DB_HOST" "$JOOMLA_DB_USER" "$JOOMLA_DB_PASSWORD" "$JOOMLA_DB_NAME"
+	mysql -h$JOOMLA_DB_HOST -u$JOOMLA_DB_USER -p$JOOMLA_DB_PASSWORD $JOOMLA_DB_NAME < /root/database.sql && rm /root/database.sql
+	rm -rf /var/www/html/install
 
         echo >&2 "========================================================================"
         echo >&2
